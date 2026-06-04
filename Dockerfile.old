@@ -1,0 +1,47 @@
+# Build image for old GCC versions (<= 9.x) that predate modern glibc.
+#
+# These compilers were originally built on old Ubuntu; building them on a
+# current host fails because glibc 2.28+ removed/changed things their
+# libsanitizer and libgo assume (sys/ustat.h, ipc_perm.mode, SIGSTKSZ, ...).
+# Bionic's glibc 2.27 predates all of that, so they build as they did
+# originally. Bionic's gnat (<= 9) also lets the Ada runtime bootstrap.
+#
+# The only deliberate change vs the original builds is bundling binutils
+# 2.38 (the first release that understands SHT_RELR), so the produced
+# compilers' ld can link against Ubuntu 24.04's glibc. Binaries link
+# against the old glibc here and run fine on 24.04 (forward compatible).
+FROM ubuntu:18.04
+MAINTAINER Matt Godbolt <matt@godbolt.org>
+
+ARG DEBIAN_FRONTEND=noninteractive
+RUN apt update -y -q && apt upgrade -y -q && apt install -y -q \
+    bison \
+    bzip2 \
+    curl \
+    file \
+    flex \
+    gawk \
+    g++ \
+    gcc \
+    git \
+    gnat \
+    libc6-dev-i386 \
+    libxml2-dev \
+    libelf-dev \
+    linux-libc-dev \
+    make \
+    patch \
+    subversion \
+    texinfo \
+    unzip \
+    wget \
+    xz-utils
+
+# We build from a directory that must be at least searchable with EPERM on
+# the CE nodes. Older GCCs erroneously search the $prefix used during
+# building, and if they hit a path that gives EPERM they bail out.
+# /opt/compiler-explorer/* is a safe spot to build these.
+RUN mkdir -p /opt/compiler-explorer/gcc-build
+COPY build /opt/compiler-explorer/gcc-build
+
+WORKDIR /opt/compiler-explorer/gcc-build

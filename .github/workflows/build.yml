@@ -24,3 +24,14 @@ jobs:
         cache-to: type=inline,mode=max
     - name: Docker Hub Image Digest
       run: echo ${{ steps.hub_build.outputs.digest }}
+    - name: Build and push old-base image to Docker Hub
+      id: hub_build_old
+      uses: docker/build-push-action@v6
+      with:
+        push: true
+        file: Dockerfile.old
+        tags: compilerexplorer/gcc-old-builder:latest
+        cache-from: type=registry,ref=compilerexplorer/gcc-old-builder:latest
+        cache-to: type=inline,mode=max
+    - name: Docker Hub Old Image Digest
+      run: echo ${{ steps.hub_build_old.outputs.digest }}
