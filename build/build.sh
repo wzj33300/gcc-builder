@@ -3,9 +3,12 @@
 set -ex
 
 # The Rust frontend needs cargo now (until it can build its rust deps, at some
-# point, someday, eventually)
-. "$HOME/.cargo/env"
-command -v cargo
+# point, someday, eventually). Only gcc 14+ has it, so skip when cargo is
+# absent (e.g. the old-glibc image used for pre-14 builds) rather than failing.
+if [ -f "$HOME/.cargo/env" ]; then
+    . "$HOME/.cargo/env"
+fi
+command -v cargo || echo "cargo not found; Rust frontend builds will be unavailable"
 
 ROOT=$(pwd)
 VERSION=$1
