@@ -150,7 +150,7 @@ elif echo "${VERSION}" | grep 'trivial-relocation-trunk'; then
     MAJOR=16
     MAJOR_MINOR=16-trunk
     LANGUAGES=c++
-elif echo "${VERSION}" | grep 'contracts-nonattr'; then
+elif echo "${VERSION}" | grep 'notadragon-contracts-p3850'; then
     VERSION=notadragon-contracts-p3850-$(date +%Y%m%d)
     URL=https://github.com/notadragon/gnu_gcc.git
     BRANCH=contracts-p3850
