@@ -3,9 +3,12 @@
 set -ex
 
 # The Rust frontend needs cargo now (until it can build its rust deps, at some
-# point, someday, eventually)
-. "$HOME/.cargo/env"
-command -v cargo
+# point, someday, eventually). Only gcc 14+ has it, so skip when cargo is
+# absent (e.g. the old-glibc image used for pre-14 builds) rather than failing.
+if [ -f "$HOME/.cargo/env" ]; then
+    . "$HOME/.cargo/env"
+fi
+command -v cargo || echo "cargo not found; Rust frontend builds will be unavailable"
 
 ROOT=$(pwd)
 VERSION=$1
@@ -31,6 +34,13 @@ if echo "${VERSION}" | grep 'embed-trunk'; then
     BRANCH=feature/embed
     MAJOR=10
     MAJOR_MINOR=10-trunk
+    LANGUAGES=c,c++
+elif echo "${VERSION}" | grep 'thephd.dev'; then
+    VERSION=thephd.dev-$(date +%Y%m%d)
+    URL=https://github.com/ThePhD/gcc.git
+    BRANCH=thephd.dev
+    MAJOR=16
+    MAJOR_MINOR=16-trunk
     LANGUAGES=c,c++
 elif echo "${VERSION}" | grep 'lock3-contracts-trunk'; then
     VERSION=lock3-contracts-trunk-$(date +%Y%m%d)
@@ -59,6 +69,13 @@ elif echo "${VERSION}" | grep 'lambda-p2034'; then
     BRANCH=lambda-p2034
     MAJOR=15
     MAJOR_MINOR=15-trunk
+    LANGUAGES=c,c++
+elif echo "${VERSION}" | grep 'contracts-p4324'; then
+    VERSION=contracts-p4324-trunk-$(date +%Y%m%d)
+    URL=https://github.com/villevoutilainen/gcc.git
+    BRANCH=p4324
+    MAJOR=17
+    MAJOR_MINOR=17-trunk
     LANGUAGES=c,c++
 elif echo "${VERSION}" | grep 'p1144-trunk'; then
     VERSION=p1144-trunk-$(date +%Y%m%d)
@@ -108,17 +125,6 @@ elif echo "${VERSION}" | grep 'gccrs-master'; then
     # This is needed because we are using some unstable features only available from
     # nightly compiler... or using the RUSTC_BOOTSTRAP escape hatch.
     export RUSTC_BOOTSTRAP=1
-elif echo "${VERSION}" | grep 'cobol-master'; then
-    VERSION=cobol-master-$(date +%Y%m%d)
-    PATCH_VERSION=cobol-master
-    URL=https://gitlab.cobolworx.com/COBOLworx/gcc-cobol.git
-    BRANCH="master+cobol"
-    MAJOR=13
-    MAJOR_MINOR=13-trunk
-    # Currently fails to build 32-bit multilibs
-    MULTILIB_ENABLED=" --disable-multilib"
-    ## implicit dep on C++ as libgcobol uses libstdc++.
-    LANGUAGES=cobol,c++
 elif echo "${VERSION}" | grep 'contracts-base-trunk'; then
     VERSION=contracts-base-trunk-$(date +%Y%m%d)
     URL=https://github.com/iains/gcc-git.git
@@ -140,12 +146,26 @@ elif echo "${VERSION}" | grep 'trivial-relocation-trunk'; then
     MAJOR=16
     MAJOR_MINOR=16-trunk
     LANGUAGES=c++
+elif echo "${VERSION}" | grep 'notadragon-contracts-p3850'; then
+    VERSION=notadragon-contracts-p3850-$(date +%Y%m%d)
+    URL=https://github.com/notadragon/gnu_gcc.git
+    BRANCH=contracts-p3850
+    MAJOR=16
+    MAJOR_MINOR=16-trunk
+    LANGUAGES=c,c++
 elif echo "${VERSION}" | grep 'thomas-healy-trunk'; then
     VERSION=thomas-healy-trunk-$(date +%Y%m%d)
     URL=https://github.com/healytpk/gcc-thomas-healy.git
     BRANCH=trunk
     MAJOR=16
     MAJOR_MINOR=16-trunk
+    LANGUAGES=c,c++
+elif echo "${VERSION}" | grep 'ilazaric-enclosing_cast'; then
+    VERSION=ilazaric-enclosing_cast-$(date +%Y%m%d)
+    URL=https://github.com/ilazaric/gcc.git
+    BRANCH=enclosing_cast
+    MAJOR=17
+    MAJOR_MINOR=17-trunk
     LANGUAGES=c,c++
 elif echo "${VERSION}" | grep 'trunk'; then
     URL=git://gcc.gnu.org/git/gcc.git
